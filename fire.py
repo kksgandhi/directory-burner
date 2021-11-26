@@ -21,17 +21,17 @@ def main(screen):
         fil.write(f"{width}\n")
 
     while 1:
-            for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=height * 3
-            for i in range(size):
-                    b[i]=int((b[i]+b[i+1]+b[i+width]+b[i+width+1])/4)
-                    color=(4 if b[i]>15 else (3 if b[i]>9 else (2 if b[i]>4 else 1)))
-                    if(i<size-1):   screen.addstr(  int(i/width),
-                                                    i%width,
-                                                    char[(9 if b[i]>9 else b[i])],
-                                                    curses.color_pair(color) | curses.A_BOLD )
+        for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=height * 3
+        for i in range(size):
+            b[i]=int((b[i]+b[i+1]+b[i+width]+b[i+width+1])/4)
+            color=(4 if b[i]>15 else (3 if b[i]>9 else (2 if b[i]>4 else 1)))
+            if(i<size-1):   screen.addstr(  int(i/width),
+                                            i%width,
+                                            char[(9 if b[i]>9 else b[i])],
+                                            curses.color_pair(color) | curses.A_BOLD )
 
-            screen.refresh()
-            screen.timeout(30)
-            if (screen.getch()!=-1): break
+        screen.refresh()
+        screen.timeout(30)
+        if (screen.getch()!=-1): break
 
 curses.wrapper(main)
