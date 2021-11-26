@@ -1,15 +1,37 @@
 #!/usr/bin/python
 import curses, random, sys
+def debug_write(string): 
+    with open("aa.txt", "a") as fil: fil.write(f"{string}\n")
+
+DROP_SPEED = 5
 
 class DropStr:
-    y = 1
+    y = 0
     x = 10
-    def __init__(self, initstr):
-        self.mainStr = initstr
-        self.toDraw  = [True * len(initstr)]
 
-    def draw(self, screen):
-        screen.addstr(self.y, self.x, self.mainStr)
+    drop_counter = 0
+
+    def __init__(self, initstr, width):
+        self.mainStr = initstr
+        self.toDraw  = [True] * len(initstr)
+        self.width = width
+        self.internal_drop_threshold = random.randint(50, 150)
+
+    def draw(self, screen, b):
+        self.drop_counter += random.random() * DROP_SPEED
+        if self.drop_counter > self.internal_drop_threshold:
+            self.drop_counter = 0
+            self.y += 1
+        for offset in range(len(self.mainStr)):
+            i = self.y * self.width + self.x + offset
+            if b[i] > 4:
+                self.toDraw[offset] = False
+        debug_write(self.mainStr)
+        debug_write(self.toDraw)
+        for idx, char in enumerate(self.mainStr):
+            if self.toDraw[idx]:
+                screen.addstr(self.y, self.x + idx, char)
+
 
 def main(screen):
     # screen  = curses.initscr()
@@ -18,7 +40,7 @@ def main(screen):
     size    = width*height
     char    = [" ", ".", ":", "^", "*", "x", "s", "S", "#", "$"]
     b       = []
-    dropstr = DropStr("hello")
+    dropstr = DropStr("hello", width)
 
     curses.curs_set(0)
     curses.start_color()
@@ -41,7 +63,7 @@ def main(screen):
                               char[(9 if b[i]>9 else b[i])],
                               curses.color_pair(color) | curses.A_BOLD )
 
-        dropstr.draw(screen)
+        dropstr.draw(screen, b)
         screen.refresh()
         screen.timeout(30)
         if (screen.getch()!=-1): break
