@@ -3,19 +3,20 @@ import curses, random, sys
 def debug_write(string): 
     with open("aa.txt", "a") as fil: fil.write(f"{string}\n")
 
-DROP_SPEED = 5
+DROP_SPEED = 15
 
 class DropStr:
     y = 0
-    x = 10
 
     drop_counter = 0
 
     def __init__(self, initstr, width):
         self.mainStr = initstr
-        self.toDraw  = [True] * len(initstr)
+        n = len(initstr)
+        self.toDraw  = [True] * n
         self.width = width
         self.internal_drop_threshold = random.randint(50, 150)
+        self.x = random.randint(n + 5, width - n - 5)
 
     def draw(self, screen, b):
         self.drop_counter += random.random() * DROP_SPEED
@@ -53,7 +54,7 @@ def main(screen):
 
     while 1:
 
-        for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=height * 3
+        for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=min(height * 3, 65)
         for i in range(size):
             b[i]=int((b[i]+b[i+1]+b[i+width]+b[i+width+1])/4)
             color=(4 if b[i]>15 else (3 if b[i]>9 else (2 if b[i]>4 else 1)))
