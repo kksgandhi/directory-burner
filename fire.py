@@ -1,9 +1,14 @@
 #!/usr/bin/python
-import curses, random, sys
+import curses, random, sys, os
+from os import path
 def debug_write(string): 
     with open("aa.txt", "a") as fil: fil.write(f"{string}\n")
 
-DROP_SPEED = 15
+DROP_SPEED = 45
+MAX_WORDS = 5
+DIR = "/home/kksgandhi/projects/fiiiiiire/testdir"
+
+filenames = [f for f in os.listdir(DIR) if path.isfile(path.join(DIR, f))]
 
 class DropStr:
     y = 0
@@ -27,21 +32,23 @@ class DropStr:
             i = self.y * self.width + self.x + offset
             if b[i] > 4:
                 self.toDraw[offset] = False
-        debug_write(self.mainStr)
-        debug_write(self.toDraw)
         for idx, char in enumerate(self.mainStr):
             if self.toDraw[idx]:
                 screen.addstr(self.y, self.x + idx, char)
+        if not self.isValid():
+            os.remove(path.join(DIR, self.mainStr))
 
+    def isValid(self):
+        return any(self.toDraw)
 
 def main(screen):
-    # screen  = curses.initscr()
-    width   = screen.getmaxyx()[1]
-    height  = screen.getmaxyx()[0]
-    size    = width*height
-    char    = [" ", ".", ":", "^", "*", "x", "s", "S", "#", "$"]
-    b       = []
-    dropstr = DropStr("hello", width)
+    # screen    = curses.initscr()
+    width       = screen.getmaxyx()[1]
+    height      = screen.getmaxyx()[0]
+    size        = width*height
+    char        = [" ", ".", ":", "^", "*", "x", "s", "S", "#", "$"]
+    b           = [0] * (size + width + 1)
+    dropstrings = []
 
     curses.curs_set(0)
     curses.start_color()
@@ -50,9 +57,11 @@ def main(screen):
     curses.init_pair(3,3,0)
     curses.init_pair(4,4,0)
     screen.clear
-    for i in range(size+width+1): b.append(0)
 
     while 1:
+        dropstrings = list(filter(lambda dropStr: dropStr.isValid(), dropstrings))
+        while len(dropstrings) < MAX_WORDS and len(filenames) > 0:
+            dropstrings.append(DropStr(filenames.pop(), width))
 
         for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=min(height * 3, 65)
         for i in range(size):
@@ -64,7 +73,7 @@ def main(screen):
                               char[(9 if b[i]>9 else b[i])],
                               curses.color_pair(color) | curses.A_BOLD )
 
-        dropstr.draw(screen, b)
+        for dropstr in dropstrings: dropstr.draw(screen, b)
         screen.refresh()
         screen.timeout(30)
         if (screen.getch()!=-1): break
