@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+
 import curses, random, sys, os
 from os import path
 def debug_write(string): 
@@ -6,9 +7,7 @@ def debug_write(string):
 
 DROP_SPEED = 45
 MAX_WORDS = 5
-DIR = "/home/kksgandhi/projects/fiiiiiire/testdir"
 
-filenames = [f for f in os.listdir(DIR) if path.isfile(path.join(DIR, f))]
 
 class DropStr:
     y = 0
@@ -35,14 +34,14 @@ class DropStr:
         for idx, char in enumerate(self.mainStr):
             if self.toDraw[idx]:
                 screen.addstr(self.y, self.x + idx, char)
-        if not self.isValid():
-            os.remove(path.join(DIR, self.mainStr))
+        if not dry_run and not self.isValid():
+            os.remove(path.join(directory, self.mainStr))
 
     def isValid(self):
         return any(self.toDraw)
 
 def main(screen):
-    # screen    = curses.initscr()
+    filenames = [f for f in os.listdir(directory) if path.isfile(path.join(directory, f))]
     width       = screen.getmaxyx()[1]
     height      = screen.getmaxyx()[0]
     size        = width*height
@@ -78,4 +77,25 @@ def main(screen):
         screen.timeout(30)
         if (screen.getch()!=-1): break
 
-curses.wrapper(main)
+if __name__ == "__main__":
+    global dry_run, directory
+    usage = "\nUsage:\n\npython3 directory_burn.py <directory> --dry-run\n\n(to test out the program)\n\npython3 directory_burn.py <directory> --burn-it\n\n(to actually delete the files in a directory)"
+    def error_out(error):
+        print()
+        print(error)
+        print(usage)
+        exit(1)
+
+    if len(sys.argv) < 3:
+        error_out("Not enough arguments")
+    directory = sys.argv[1]
+    if not path.isdir(directory):
+        error_out("First argument is not a directory")
+    if sys.argv[2] == "--dry-run":
+        dry_run = True
+    elif sys.argv[2] == "--burn-it":
+        dry_run = False
+    else:
+        error_out("Second argument must be --dry-run or --burn-it")
+
+    curses.wrapper(main)
