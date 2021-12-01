@@ -99,4 +99,7 @@ if __name__ == "__main__":
     else:
         error_out("Second argument must be --dry-run or --burn-it")
 
-    curses.wrapper(main)
+    try:
+        curses.wrapper(main)
+    except KeyboardInterrupt:
+        print("Hope that burning your files was cathartic!")
