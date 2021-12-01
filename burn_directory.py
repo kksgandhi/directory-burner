@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-import curses, random, sys, os
+import curses, random, sys, os, math
 from os import path
-def debug_write(string): 
-    with open("aa.txt", "a") as fil: fil.write(f"{string}\n")
 
-DROP_SPEED = 45
-MAX_WORDS = 5
+DROP_SPEED          = 45
+MAX_FILES_ON_SCREEN = 15
 
 
 class DropStr:
@@ -44,7 +42,7 @@ def main(screen):
     filenames = [f for f in os.listdir(directory) if path.isfile(path.join(directory, f))]
     width       = screen.getmaxyx()[1]
     height      = screen.getmaxyx()[0]
-    size        = width*height
+    size        = width * height
     char        = [" ", ".", ":", "^", "*", "x", "s", "S", "#", "$"]
     b           = [0] * (size + width + 1)
     dropstrings = []
@@ -59,7 +57,10 @@ def main(screen):
 
     while 1:
         dropstrings = list(filter(lambda dropStr: dropStr.isValid(), dropstrings))
-        while len(dropstrings) < MAX_WORDS and len(filenames) > 0:
+        files_remain = len(filenames) > 0
+        files_fill_ratio  = (MAX_FILES_ON_SCREEN * 0.5 - len(dropstrings)) / MAX_FILES_ON_SCREEN
+        should_drop = math.pow(random.random(), 0.3) < files_fill_ratio
+        if files_remain and should_drop:
             dropstrings.append(DropStr(filenames.pop(), width))
 
         for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=min(height * 3, 65)
@@ -75,7 +76,7 @@ def main(screen):
         for dropstr in dropstrings: dropstr.draw(screen, b)
         screen.refresh()
         screen.timeout(30)
-        if (screen.getch()!=-1): break
+        screen.getch()
 
 if __name__ == "__main__":
     global dry_run, directory
