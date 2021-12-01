@@ -6,6 +6,13 @@ from os import path
 DROP_SPEED          = 45
 MAX_FILES_ON_SCREEN = 15
 
+class StdOutWrapper:
+    text = ""
+    def write(self,txt):
+        self.text += txt
+        self.text = '\n'.join(self.text.split('\n')[-30:])
+    def get_text(self):
+        return '\n'.join(self.text.split('\n'))
 
 class FileOnScreen:
 
@@ -110,12 +117,18 @@ def main(screen):
                               char[(9 if b[i]>9 else b[i])],
                               curses.color_pair(color) | curses.A_BOLD )
 
-        for file_on_screen in files_on_screen: file_on_screen.draw(screen, b)
+        for file_on_screen in files_on_screen: 
+            file_on_screen.handle_main_loop(screen, b)
         screen.refresh()
         screen.timeout(30)
         screen.getch()
 
 if __name__ == "__main__":
+
+    mystdout = StdOutWrapper()
+    sys.stdout = mystdout
+    sys.stderr = mystdout
+
     global dry_run, directory
     usage = "\nUsage:\n\npython3 directory_burn.py <directory> --dry-run\n\n(to test out the program)\n\npython3 directory_burn.py <directory> --burn-it\n\n(to actually delete the files in a directory)"
     def error_out(error):
@@ -140,3 +153,7 @@ if __name__ == "__main__":
         curses.wrapper(main)
     except KeyboardInterrupt:
         print("Hope that burning your files was cathartic!")
+    finally:
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+        sys.stdout.write(mystdout.get_text())
