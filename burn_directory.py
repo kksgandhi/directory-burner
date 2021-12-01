@@ -7,45 +7,78 @@ DROP_SPEED          = 45
 MAX_FILES_ON_SCREEN = 15
 
 
-class DropStr:
+class FileOnScreen:
+
+    # coordinates of the file
     y = 0
+    x = 0
 
+    screen_width = 100
+
+    # increasing counter. Counts up each loop until internal_drop_threshold is hit, then this file moves down one line.
     drop_counter = 0
+    internal_drop_threshold = 100
 
-    def __init__(self, initstr, width):
-        self.mainStr = initstr
-        n = len(initstr)
-        self.toDraw  = [True] * n
-        self.width = width
+    # list of booleans describing whether each character in the filename are "burnt" or not (and whether they should be drawn)
+    unburnt_characters = [True]
+
+    def __init__(self, filename, screen_width):
+        self.filename                = filename
+        n                            = len(filename)
+        self.unburnt_characters      = [True] * n
+        self.screen_width            = screen_width
         self.internal_drop_threshold = random.randint(50, 150)
-        self.x = random.randint(n + 5, width - n - 5)
+        self.x                       = random.randint(n + 5, screen_width - n - 5)
 
-    def draw(self, screen, b):
+    def __handle_dropping_lower(self):
+        """
+        Increase the drop counter, 
+        if it is over the drop threshold, lower this file's y coordinate by 1
+        """
         self.drop_counter += random.random() * DROP_SPEED
         if self.drop_counter > self.internal_drop_threshold:
             self.drop_counter = 0
             self.y += 1
-        for offset in range(len(self.mainStr)):
-            i = self.y * self.width + self.x + offset
-            if b[i] > 4:
-                self.toDraw[offset] = False
-        for idx, char in enumerate(self.mainStr):
-            if self.toDraw[idx]:
-                screen.addstr(self.y, self.x + idx, char)
-        if not dry_run and not self.isValid():
-            os.remove(path.join(directory, self.mainStr))
 
-    def isValid(self):
-        return any(self.toDraw)
+    def __handle_burning(self, b):
+        """
+        Look at the b array (which describes how 'on fire' each pixel is)
+        and set the unburnt_characters array appropriately
+        """
+        for offset in range(len(self.filename)):
+            i = self.y * self.screen_width + self.x + offset
+            if b[i] > 4:
+                self.unburnt_characters[offset] = False
+
+    def __draw(self, screen):
+        """Draw unburnt_characters to the screen"""
+        for idx, char in enumerate(self.filename):
+            if self.unburnt_characters[idx]:
+                screen.addstr(self.y, self.x + idx, char)
+
+    def __delete_file_if_entirely_burnt(self):
+        if not dry_run and self.is_fully_burnt():
+            os.remove(path.join(directory, self.filename))
+
+    def handle_main_loop(self, screen, b):
+        self.__handle_dropping_lower()
+        self.__handle_burning(b)
+        self.__draw(screen)
+        self.__delete_file_if_entirely_burnt()
+
+    def is_fully_burnt(self):
+        # self does not have any unburnt_characters, aka all characters are burnt
+        return not any(self.unburnt_characters)
 
 def main(screen):
+    # get everything that is a simple file
     filenames = [f for f in os.listdir(directory) if path.isfile(path.join(directory, f))]
     width       = screen.getmaxyx()[1]
     height      = screen.getmaxyx()[0]
     size        = width * height
     char        = [" ", ".", ":", "^", "*", "x", "s", "S", "#", "$"]
     b           = [0] * (size + width + 1)
-    dropstrings = []
+    files_on_screen = []
 
     curses.curs_set(0)
     curses.start_color()
@@ -56,13 +89,17 @@ def main(screen):
     screen.clear
 
     while 1:
-        dropstrings = list(filter(lambda dropStr: dropStr.isValid(), dropstrings))
-        files_remain = len(filenames) > 0
-        files_fill_ratio  = (MAX_FILES_ON_SCREEN * 0.5 - len(dropstrings)) / MAX_FILES_ON_SCREEN
+        # remove any files that are fully burnt
+        files_on_screen = list(filter(lambda files_on_screen: not file_on_screen.is_fully_burnt(), files_on_screen))
+        do_files_remain = len(filenames) > 0
+        # The next two lines are just some magic numbers and arbitrary formulas to decide whether a new file should be dropped
+        # Basically the fewer files are on screen, the more likely it is for a new file to be dropped.
+        files_fill_ratio  = (MAX_FILES_ON_SCREEN * 0.5 - len(files_on_screen)) / MAX_FILES_ON_SCREEN
         should_drop = math.pow(random.random(), 0.3) < files_fill_ratio
-        if files_remain and should_drop:
-            dropstrings.append(DropStr(filenames.pop(), width))
+        if do_files_remain and should_drop:
+            files_on_screen.append(FileOnScreen(filenames.pop(), width))
 
+        # Fire code, see README for link to original code
         for i in range(int(width/9)): b[int((random.random()*width)+width*(height-1))]=min(height * 3, 65)
         for i in range(size):
             b[i]=int((b[i]+b[i+1]+b[i+width]+b[i+width+1])/4)
@@ -73,7 +110,7 @@ def main(screen):
                               char[(9 if b[i]>9 else b[i])],
                               curses.color_pair(color) | curses.A_BOLD )
 
-        for dropstr in dropstrings: dropstr.draw(screen, b)
+        for file_on_screen in files_on_screen: file_on_screen.draw(screen, b)
         screen.refresh()
         screen.timeout(30)
         screen.getch()
