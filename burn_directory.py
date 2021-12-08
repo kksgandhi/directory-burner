@@ -7,6 +7,11 @@ DROP_SPEED          = 45
 MAX_FILES_ON_SCREEN = 15
 
 class StdOutWrapper:
+    """
+    Simple class to allow printing of debug information
+    even while using curses (logged info will be printed right before program finishes running)
+    https://stackoverflow.com/questions/14010073/print-to-standard-console-in-curses
+    """
     text = ""
     def write(self,txt):
         self.text += txt
