@@ -98,6 +98,7 @@ def main(screen):
     while 1:
         # remove any files that are fully burnt
         files_on_screen = list(filter(lambda files_on_screen: not file_on_screen.is_fully_burnt(), files_on_screen))
+        print(list(map(lambda fil: fil.filename, files_on_screen)))
         do_files_remain = len(filenames) > 0
         # The next two lines are just some magic numbers and arbitrary formulas to decide whether a new file should be dropped
         # Basically the fewer files are on screen, the more likely it is for a new file to be dropped.
@@ -125,10 +126,6 @@ def main(screen):
 
 if __name__ == "__main__":
 
-    mystdout = StdOutWrapper()
-    sys.stdout = mystdout
-    sys.stderr = mystdout
-
     global dry_run, directory
     usage = "\nUsage:\n\npython3 directory_burn.py <directory> --dry-run\n\n(to test out the program)\n\npython3 directory_burn.py <directory> --burn-it\n\n(to actually delete the files in a directory)"
     def error_out(error):
@@ -148,6 +145,10 @@ if __name__ == "__main__":
         dry_run = False
     else:
         error_out("Second argument must be --dry-run or --burn-it")
+
+    mystdout = StdOutWrapper()
+    sys.stdout = mystdout
+    sys.stderr = mystdout
 
     try:
         curses.wrapper(main)
