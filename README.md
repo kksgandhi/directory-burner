@@ -12,6 +12,8 @@ or
 
 Or you can run `test.sh` to create a test folder and then burn the files inside it.
 
+`CTRL-C` or `SIGINT` to stop running the program.
+
 #### Other info
 
 [Fire code taken from here](https://gist.github.com/msimpson/1096950)
