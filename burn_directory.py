@@ -40,7 +40,7 @@ class FileOnScreen:
         self.unburnt_characters      = [True] * n
         self.screen_width            = screen_width
         self.internal_drop_threshold = random.randint(50, 150)
-        self.x                       = random.randint(n + 5, screen_width - n - 5)
+        self.x                       = random.randint(0, screen_width - n - 1)
 
     def __handle_dropping_lower(self):
         """
