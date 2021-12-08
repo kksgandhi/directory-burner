@@ -85,6 +85,7 @@ class FileOnScreen:
 def main(screen):
     # get everything that is a simple file
     filenames = [f for f in os.listdir(directory) if path.isfile(path.join(directory, f))]
+    random.shuffle(filenames)
     width       = screen.getmaxyx()[1]
     height      = screen.getmaxyx()[0]
     size        = width * height
