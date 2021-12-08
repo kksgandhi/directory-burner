@@ -4,7 +4,7 @@ Is `rm -rf` too boring for you? `burn_directory.py` lets you watch as your files
 
 #### Usage
 
-`python3 directory_burn.py <directory> --dry-run` (To test out the program)
+`python3 directory_burn.py <directory> --dry-run` (To test out the program without deleting any files)
 
 or
 
