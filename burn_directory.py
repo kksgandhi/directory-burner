@@ -3,11 +3,11 @@
 import curses, random, sys, os, math
 from os import path
 try:
-    import config
+    from config import remove_function
 except ImportError:
     # We tried to import the config file, but the user hadn't created one.
     # Fall back to the example config
-    import config_example
+    from config_example import remove_function
 
 DROP_SPEED          = 45
 MAX_FILES_ON_SCREEN = 15
