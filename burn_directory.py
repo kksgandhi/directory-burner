@@ -2,6 +2,12 @@
 
 import curses, random, sys, os, math
 from os import path
+try:
+    import config
+except ImportError:
+    # We tried to import the config file, but the user hadn't created one.
+    # Fall back to the example config
+    import config_example
 
 DROP_SPEED          = 45
 MAX_FILES_ON_SCREEN = 15
@@ -70,7 +76,8 @@ class FileOnScreen:
 
     def __delete_file_if_entirely_burnt(self):
         if not dry_run and self.is_fully_burnt():
-            os.remove(path.join(directory, self.filename))
+            # imported from the config
+            remove_function(directory, self.filename)
 
     def handle_main_loop(self, screen, b):
         self.__handle_dropping_lower()

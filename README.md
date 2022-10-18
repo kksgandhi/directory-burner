@@ -14,6 +14,8 @@ Or you can run `test.sh` to create a test folder and then burn the files inside 
 
 `CTRL-C` or `SIGINT` to stop running the program.
 
+Some additional modification can be done by copying `config_example.py` to `config.py` and editing it.
+
 #### Other info
 
 [Fire code taken from here](https://gist.github.com/msimpson/1096950)
